@@ -38,21 +38,23 @@ if txt_file and groq_key and jina_key:
 
     if txt_file.name.endswith(".pdf"):
         reader = PdfReader(txt_file)
-        raw_text = "\n".join([p.extract_text() for p in reader.pages if p.extract_text()])
+        raw_text = "\n".join(
+            [p.extract_text() for p in reader.pages if p.extract_text()]
+        )
     else:
         raw_text = txt_file.read().decode("utf-8")
 
     chunks = chunk_text(raw_text)
-
     metadata = [{"type": "text"} for _ in chunks]
 
     if img_file:
         image_bytes = img_file.read()
 
-        ocr_text = extract_text_from_image(
-            tempfile.NamedTemporaryFile(delete=False).name
-        )
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+            tmp.write(image_bytes)
+            image_path = tmp.name
 
+        ocr_text = extract_text_from_image(image_path)
         vision_text = describe_image(image_bytes, groq_key)
 
         combined = " ".join([ocr_text, vision_text]).strip()
