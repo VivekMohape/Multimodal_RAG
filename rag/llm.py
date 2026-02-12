@@ -1,11 +1,12 @@
 from groq import Groq
 
 
-def ask_groq(context, question, api_key):
+def ask_llm(context, question, api_key, model):
     client = Groq(api_key=api_key)
 
     prompt = f"""
-Answer using only the context below.
+Answer only using the context below.
+If the answer is not present, respond with: "Not enough information in the provided context."
 
 Context:
 {context}
@@ -16,9 +17,9 @@ Answer:
 """
 
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
 
-    return response.choices[0].message.content
+    return response.choices[0].message.content.strip()
